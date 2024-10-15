@@ -130,3 +130,8 @@ dist
 .pnp.*
 
 bin/
+
+example-workflows/*/*.js
+input
+output
+models

@@ -1,24 +1,66 @@
 import assert from "node:assert";
 import fs from "node:fs";
 import path from "node:path";
-import { execSync } from "child_process";
 import { z } from "zod";
 const {
-  CMD = "init.sh",
   HOST = "::",
   PORT = "3000",
   DIRECT_ADDRESS = "127.0.0.1",
   COMFYUI_PORT_HOST = "8188",
   STARTUP_CHECK_INTERVAL_S = "1",
   STARTUP_CHECK_MAX_TRIES = "10",
-  OUTPUT_DIR = "/opt/ComfyUI/output",
-  INPUT_DIR = "/opt/ComfyUI/input",
-  MODEL_DIR = "/opt/ComfyUI/models",
+  OUTPUT_DIR = "/output",
+  INPUT_DIR = "/input",
+  MODEL_DIR = "/models",
   WARMUP_PROMPT_FILE,
   WORKFLOW_MODELS = "all",
   WORKFLOW_DIR = "/workflows",
   MARKDOWN_SCHEMA_DESCRIPTIONS = "true",
 } = process.env;
+
+
+const SAMPLERS: string[] = (process.env.SAMPLERS && JSON.parse(process.env.SAMPLERS)) ?? [
+  "euler", 
+  "euler_cfg_pp", 
+  "euler_ancestral", 
+  "euler_ancestral_cfg_pp", 
+  "heun", 
+  "heunpp2", 
+  "dpm_2", 
+  "dpm_2_ancestral", 
+  "lms", 
+  "dpm_fast", 
+  "dpm_adaptive", 
+  "dpmpp_2s_ancestral", 
+  "dpmpp_2s_ancestral_cfg_pp", 
+  "dpmpp_sde", 
+  "dpmpp_sde_gpu", 
+  "dpmpp_2m", 
+  "dpmpp_2m_cfg_pp", 
+  "dpmpp_2m_sde", 
+  "dpmpp_2m_sde_gpu", 
+  "dpmpp_3m_sde", 
+  "dpmpp_3m_sde_gpu", 
+  "ddpm", 
+  "lcm", 
+  "ipndm", 
+  "ipndm_v", 
+  "deis", 
+  "ddim", 
+  "uni_pc", 
+  "uni_pc_bh2",
+];
+
+const SCHEDULERS: string[] = (process.env.SCHEDULERS && JSON.parse(process.env.SCHEDULERS)) ?? [
+  "normal", 
+  "karras", 
+  "exponential", 
+  "sgm_uniform", 
+  "simple", 
+  "ddim_uniform", 
+  "beta",
+];
+
 
 fs.mkdirSync(WORKFLOW_DIR, { recursive: true });
 
@@ -28,8 +70,6 @@ const port = parseInt(PORT, 10);
 const startupCheckInterval = parseInt(STARTUP_CHECK_INTERVAL_S, 10) * 1000;
 const startupCheckMaxTries = parseInt(STARTUP_CHECK_MAX_TRIES, 10);
 
-// The parent directory of model_dir
-const comfyDir = path.join(MODEL_DIR, "..");
 
 let warmupPrompt: any | undefined;
 let warmupCkpt: string | undefined;
@@ -51,64 +91,7 @@ if (WARMUP_PROMPT_FILE) {
   }
 }
 
-interface ComfyDescription {
-  samplers: string[];
-  schedulers: string[];
-}
-
-function getComfyUIDescription(): ComfyDescription {
-  const temptComfyFilePath = path.join(comfyDir, "temp_comfy_description.json");
-  const pythonCode = `
-import comfy.samplers
-import json
-
-comfy_description = {
-    "samplers": comfy.samplers.KSampler.SAMPLERS,
-    "schedulers": comfy.samplers.KSampler.SCHEDULERS,
-}
-
-with open("${temptComfyFilePath}", "w") as f:
-    json.dump(comfy_description, f)
-`;
-
-  const tempFilePath = path.join(comfyDir, "temp_comfy_description.py");
-  const command = `
-  source /opt/ai-dock/etc/environment.sh \
-  && source /opt/ai-dock/bin/venv-set.sh comfyui \
-  && source "$COMFYUI_VENV/bin/activate" \
-  && python ${tempFilePath}`;
-
-  try {
-    // Write the Python code to a temporary file
-    fs.writeFileSync(tempFilePath, pythonCode);
-
-    // Execute the Python script synchronously
-    execSync(command, {
-      cwd: comfyDir,
-      encoding: "utf-8",
-      shell: process.env.SHELL,
-      env: {
-        ...process.env,
-      },
-    });
-    const output = fs.readFileSync(temptComfyFilePath, { encoding: "utf-8" });
-    return JSON.parse(output.trim()) as ComfyDescription;
-  } catch (error: any) {
-    throw new Error(`Failed to get ComfyUI description: ${error.message}`);
-  } finally {
-    // Clean up the temporary file
-    try {
-      fs.unlinkSync(tempFilePath);
-    } catch (unlinkError: any) {
-      console.error(`Failed to delete temporary file: ${unlinkError.message}`);
-    }
-  }
-}
-
-const comfyDescription = getComfyUIDescription();
-
 const config = {
-  comfyLaunchCmd: CMD,
   wrapperHost: HOST,
   wrapperPort: port,
   selfURL,
@@ -122,8 +105,8 @@ const config = {
   workflowDir: WORKFLOW_DIR,
   warmupPrompt,
   warmupCkpt,
-  samplers: z.enum(comfyDescription.samplers as [string, ...string[]]),
-  schedulers: z.enum(comfyDescription.schedulers as [string, ...string[]]),
+  samplers: z.enum(SAMPLERS as [string, ...string[]]),
+  schedulers: z.enum(SCHEDULERS as [string, ...string[]]),
   models: {} as Record<
     string,
     {

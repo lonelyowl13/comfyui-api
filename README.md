@@ -41,27 +41,28 @@ This guide provides an overview of how to configure the application using enviro
 ### Environment Variables
 
 The following table lists the available environment variables and their default values.
-The default values mostly assume this will run on top of an [ai-dock](https://github.com/ai-dock/comfyui) image, but can be customized as needed.
+~~The default values mostly assume this will run on top of an [ai-dock](https://github.com/ai-dock/comfyui) image, but can be customized as needed.~~ \
+Certain parts of this wrapper have been rewritten to avoid running multiple services in one container. It is now assumed that the wrapper will be run as a separate service via docker-compose.
 
 | Variable | Default Value | Description |
 |----------|---------------|-------------|
-| CMD | "init.sh" | Command to launch ComfyUI |
 | HOST | "::" | Wrapper host address |
 | PORT | "3000" | Wrapper port number |
 | DIRECT_ADDRESS | "127.0.0.1" | Direct address for ComfyUI |
 | COMFYUI_PORT_HOST | "8188" | ComfyUI port number |
 | STARTUP_CHECK_INTERVAL_S | "1" | Interval in seconds between startup checks |
 | STARTUP_CHECK_MAX_TRIES | "10" | Maximum number of startup check attempts |
-| OUTPUT_DIR | "/opt/ComfyUI/output" | Directory for output files |
-| INPUT_DIR | "/opt/ComfyUI/input" | Directory for input files |
-| MODEL_DIR | "/opt/ComfyUI/models" | Directory for model files |
+| OUTPUT_DIR | "/output" | Directory for output files |
+| INPUT_DIR | "/input" | Directory for input files |
+| MODEL_DIR | "/models" | Directory for model files |
 | WARMUP_PROMPT_FILE | (not set) | Path to warmup prompt file (optional) |
 | WORKFLOW_DIR | "/workflows" | Directory for workflow files |
+| SAMPLERS | (comfy samplers) | json array of sampler names |
+| SCHEDULERS | (comfy schedulers) | json array of scheduler names |
 
 ### Configuration Details
 
 1. **ComfyUI Settings**:
-   - The application uses the `CMD` environment variable to specify the command for launching ComfyUI.
    - ComfyUI is accessed at `http://${DIRECT_ADDRESS}:${COMFYUI_PORT_HOST}`.
 
 2. **Wrapper Settings**:
@@ -89,7 +90,8 @@ The default values mostly assume this will run on top of an [ai-dock](https://gi
    - The model names are exposed via the `GET /models` endpoint, and via the config object throughout the application.
 
 7. **ComfyUI Description**:
-   - The application retrieves available samplers and schedulers from ComfyUI.
+   - Samplers and schedulers are hardcoded into the config so as not to depend on the comfy source code. They don't change very often, but just in case, they can be overridden via the SAMPLERS and SCEDULERS environment variables, respectively. 
+   - E.g. - 'SAMPLERS=["euler", "euler_cfg_pp", "euler_ancestral", ..., "a_new_sampler"]'
    - This information is used to create Zod enums for validation.
 
 ### Additional Notes

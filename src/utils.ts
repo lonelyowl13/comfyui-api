@@ -1,6 +1,5 @@
 import config from "./config";
 import { FastifyBaseLogger } from "fastify";
-import { CommandExecutor } from "./commands";
 import fs from "fs";
 import fsPromises from "fs/promises";
 import { Readable } from "stream";
@@ -8,23 +7,8 @@ import path from "path";
 import { randomUUID } from "crypto";
 import { ZodObject, ZodRawShape, ZodTypeAny, ZodDefault } from "zod";
 
-const commandExecutor = new CommandExecutor();
-
 export async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-export function launchComfyUI() {
-  commandExecutor.execute(config.comfyLaunchCmd, [], {
-    DIRECT_ADDRESS: config.comfyHost,
-    COMFYUI_PORT_HOST: config.comfyPort,
-    WEB_ENABLE_AUTH: "false",
-    CF_QUICK_TUNNELS: "false",
-  });
-}
-
-export function shutdownComfyUI() {
-  commandExecutor.interrupt();
 }
 
 export async function pingComfyUI(): Promise<void> {

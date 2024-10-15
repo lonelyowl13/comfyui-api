@@ -15,8 +15,6 @@ import config from "./config";
 import {
   warmupComfyUI,
   waitForComfyUIToStart,
-  launchComfyUI,
-  shutdownComfyUI,
   processImage,
   zodToMarkdownTable,
 } from "./utils";
@@ -371,7 +369,6 @@ let warm = false;
 
 process.on("SIGINT", async () => {
   server.log.info("Received SIGINT, interrupting process");
-  shutdownComfyUI();
   await outputWatcher.stopWatching();
   process.exit(0);
 });
@@ -379,8 +376,7 @@ process.on("SIGINT", async () => {
 export async function start() {
   try {
     const start = Date.now();
-    // Start the command
-    launchComfyUI();
+    // Wait for comfy
     await waitForComfyUIToStart(server.log);
 
     await server.ready();

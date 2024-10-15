@@ -1,11 +1,30 @@
 services:
+  # this is the comfy service, any kind of existing comfy container could be used, e.g. ai-dock
+  # or this one -> https://github.com/YanWenKun/ComfyUI-Docker
   comfyui:
-    image: saladtechnologies/comfyui:comfy0.2.2-api1.4.1-base
+    image: comfy_simple
     volumes:
-      - ./bin:/app/bin
-    command: ["/app/bin/comfyui-api"]
+      - ./models/diffusion_models:/ComfyUI/models/diffusion_models
+      - ./models/controlnet:/ComfyUI/models/controlnet
+      - ./models/upscale_models:/ComfyUI/models/upscale_models
+      - ./models/photomaker:/ComfyUI/models/photomaker
+      - ./models/embeddings:/ComfyUI/models/embeddings
+      - ./models/checkpoints:/ComfyUI/models/checkpoints
+      - ./models/style_models:/ComfyUI/models/style_models
+      - ./models/clip:/ComfyUI/models/clip
+      - ./models/hypernetworks:/ComfyUI/models/hypernetworks
+      - ./models/diffusers:/ComfyUI/models/diffusers
+      - ./models/vae:/ComfyUI/models/vae
+      - ./models/gligen:/ComfyUI/models/gligen
+      - ./models/unet:/ComfyUI/models/unet
+      - ./models/clip_vision:/ComfyUI/models/clip_vision
+      - ./models/vae_approx:/ComfyUI/models/vae_approx
+      - ./models/loras:/ComfyUI/models/loras
+
+      - ./output:/ComfyUI/output
+      - ./input:/ComfyUI/input
     ports:
-      - "3000:3000"
+      - "8188:8188"
     deploy:
       resources:
         reservations:
@@ -14,3 +33,21 @@ services:
               capabilities: [ gpu ]
               count: all
 
+  # this is an api-wrapper service, it runs in a separate container
+  api:
+    image: comfy-api
+    volumes:
+      - ./models:/models
+      - ./output:/output
+      - ./input:/input
+      - ./example-workflows:/workflows
+    depends_on:
+      comfyui:
+        condition: service_started
+    build:
+      context: . 
+    ports:
+    - "3000:3000"
+    environment:
+      - DIRECT_ADDRESS=comfyui
+    command: ["./comfyui-api"]
