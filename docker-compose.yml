@@ -1,6 +1,5 @@
 services:
-  # this is the comfy service, any kind of existing comfy container could be used, e.g. ai-dock
-  # or this one -> https://github.com/YanWenKun/ComfyUI-Docker
+  # this is the comfy service, any kind of existing comfy container could be used
   comfyui:
     image: comfy_simple
     volumes:
@@ -39,7 +38,7 @@ services:
     volumes:
       - ./models:/models
       - ./output:/output
-      - ./input:/input
+      - ./input:/inputs
       - ./example-workflows:/workflows
     depends_on:
       comfyui:

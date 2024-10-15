@@ -1,13 +1,57 @@
 # ComfyUI API - A Stateless and Extendable API for ComfyUI
 A simple wrapper that facilitates using ComfyUI as a stateless API, either by receiving images in the response, or by sending completed images to a webhook
 
-Download the latest version from the release page, and copy it into your existing ComfyUI dockerfile. Then, you can use it like this:
+This is a fork of the [original comfyui-api](https://github.com/SaladTechnologies/comfyui-api), that tries to follow the docker principle of "one service - one container".
 
-```dockerfile
-COPY comfyui-api .
-RUN chmod +x comfyui-api
+Download dockerfile, and add the service to your docker-compose.yml, e.g.:
 
-CMD ["./comfyui-api"]
+```yaml
+# .yml borrowed here -> https://github.com/YanWenKun/ComfyUI-Docker/tree/main/cu124-megapak
+services:
+
+  comfyui:
+    init: true
+    container_name: comfyui
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: "yanwk/comfyui-boot:cu124-megapak"
+    ports:
+      - "8188:8188"
+    volumes:
+      - "./storage:/root"
+    environment:
+      - CLI_ARGS=
+    security_opt:
+      - "label=type:nvidia_container_t"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0']
+              capabilities: [gpu]
+
+
+  api:
+    image: comfy-api
+    volumes:
+      - ./storage/ComfyUI/models:/models
+      - ./storage/ComfyUI/output:/output
+      - ./storage/ComfyUI/input:/inputs
+      - ./workflows:/workflows
+    depends_on:
+      comfyui:
+        condition: service_started
+    build:
+      context: . 
+      dockerfile: Dockerfile.api
+    ports:
+    - "3000:3000"
+    environment:
+      - STARTUP_CHECK_MAX_TRIES=50
+      - DIRECT_ADDRESS=comfyui
+    command: ["./comfyui-api"]
 ```
 
 The server will be available on port `3000` by default, but this can be customized with the `PORT` environment variable.

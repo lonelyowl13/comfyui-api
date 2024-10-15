@@ -1,18 +1,10 @@
 FROM ubuntu:oracular
 
-COPY ./bin/comfyui-api .
+RUN apt-get update && apt-get install -y curl
 
-VOLUME [ \
-    "/models", \
-    "/output", \
-    "/input", \
-    "/workflows" \
-    ]
+VOLUME ["/models", "/input", "/output", "/workflows" ]
 
-ENV OUTPUT_DIR="/output"
-ENV INPUT_DIR="/input"
-ENV MODEL_DIR="/models"
-ENV WORKFLOW_DIR="/workflows"
+RUN curl -L "https://github.com/lonelyowl13/comfyui-api/releases/download/1.4.3/comfyui-api" > /comfyui-api
 
 RUN chmod +x comfyui-api
 
