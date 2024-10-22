@@ -135,3 +135,6 @@ example-workflows/*/*.js
 input
 output
 models
+my_workflows
+ComfyUI_temp
+custom_nodes

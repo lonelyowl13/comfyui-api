@@ -1,27 +1,16 @@
 services:
   # this is the comfy service, any kind of existing comfy container could be used
   comfyui:
-    image: comfy_simple
+    image: ghcr.io/lonelyowl13/comfy_simple:latest
     volumes:
-      - ./models/diffusion_models:/ComfyUI/models/diffusion_models
-      - ./models/controlnet:/ComfyUI/models/controlnet
-      - ./models/upscale_models:/ComfyUI/models/upscale_models
-      - ./models/photomaker:/ComfyUI/models/photomaker
-      - ./models/embeddings:/ComfyUI/models/embeddings
-      - ./models/checkpoints:/ComfyUI/models/checkpoints
-      - ./models/style_models:/ComfyUI/models/style_models
-      - ./models/clip:/ComfyUI/models/clip
-      - ./models/hypernetworks:/ComfyUI/models/hypernetworks
-      - ./models/diffusers:/ComfyUI/models/diffusers
-      - ./models/vae:/ComfyUI/models/vae
-      - ./models/gligen:/ComfyUI/models/gligen
-      - ./models/unet:/ComfyUI/models/unet
-      - ./models/clip_vision:/ComfyUI/models/clip_vision
-      - ./models/vae_approx:/ComfyUI/models/vae_approx
-      - ./models/loras:/ComfyUI/models/loras
-
+      - ./models/:/ComfyUI/models/
+      - ./custom_nodes/:/ComfyUI/custom_nodes/
       - ./output:/ComfyUI/output
       - ./input:/ComfyUI/input
+      - ./my_workflows:/ComfyUI/my_workflows
+      - ./ComfyUI_temp:/ComfyUI_temp
+      - ./comfyui.log:/ComfyUI/comfyui.log
+
     ports:
       - "8188:8188"
     deploy:
