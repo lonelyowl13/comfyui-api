@@ -138,3 +138,4 @@ models
 my_workflows
 ComfyUI_temp
 custom_nodes
+venv

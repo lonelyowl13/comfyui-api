@@ -12,6 +12,7 @@ services:
       - ./my_workflows:/ComfyUI/my_workflows
       - ./ComfyUI_temp:/ComfyUI_temp
       - ./comfyui.log:/ComfyUI/comfyui.log
+      - ./venv:/venv
 
     deploy:
       resources:
@@ -30,7 +31,7 @@ services:
       - ./models:/models
       - ./output:/output
       - ./input:/inputs
-      - ./example-workflows:/workflows
+      - ./workflows:/workflows
     depends_on:
       comfyui:
         condition: service_started
