@@ -4,7 +4,6 @@ import config from "../../src/config";
 
 const RequestSchema = z.object({
     prompt: z.string().describe("The positive prompt for image generation"),
-    negative_prompt: z.string().describe("The negative prompt for image generation"),
     seed: z
       .number()
       .int()
@@ -19,13 +18,6 @@ const RequestSchema = z.object({
       .optional()
       .default(4)
       .describe("Number of sampling steps"),
-    cfg_scale: z
-      .number()
-      .min(0)
-      .max(20)
-      .optional()
-      .default(1)
-      .describe("Classifier-free guidance scale"),
     sampler_name: config.samplers
       .optional()
       .default("euler")
@@ -54,7 +46,7 @@ function generateWorkflow(input: InputType): Record<string, ComfyNode> {
       "inputs": {
         "seed": input.seed,
         "steps": input.steps,
-        "cfg": input.cfg_scale,
+        "cfg": 1,
         "sampler_name": input.sampler_name,
         "scheduler": input.scheduler,
         "denoise": input.denoise,
@@ -104,7 +96,7 @@ function generateWorkflow(input: InputType): Record<string, ComfyNode> {
     },
     "7": {
       "inputs": {
-        "text": input.negative_prompt,
+        "text": "",
         "clip": [
           "4",
           1

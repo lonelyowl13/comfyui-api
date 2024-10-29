@@ -4,7 +4,6 @@ var zod_1 = require("zod");
 var config_1 = require("../../src/config");
 var RequestSchema = zod_1.z.object({
     prompt: zod_1.z.string().describe("The positive prompt for image generation"),
-    negative_prompt: zod_1.z.string().describe("The negative prompt for image generation"),
     seed: zod_1.z
         .number()
         .int()
@@ -19,13 +18,6 @@ var RequestSchema = zod_1.z.object({
         .optional()
         .default(4)
         .describe("Number of sampling steps"),
-    cfg_scale: zod_1.z
-        .number()
-        .min(0)
-        .max(20)
-        .optional()
-        .default(1)
-        .describe("Classifier-free guidance scale"),
     sampler_name: config_1.default.samplers
         .optional()
         .default("euler")
@@ -50,7 +42,7 @@ function generateWorkflow(input) {
             "inputs": {
                 "seed": input.seed,
                 "steps": input.steps,
-                "cfg": input.cfg_scale,
+                "cfg": 1,
                 "sampler_name": input.sampler_name,
                 "scheduler": input.scheduler,
                 "denoise": input.denoise,
