@@ -131,7 +131,7 @@ dist
 
 bin/
 
-example-workflows/*/*.js
+workflows/*/*.js
 input
 output
 models

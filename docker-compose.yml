@@ -30,7 +30,7 @@ services:
     volumes:
       - ./models:/models
       - ./output:/output
-      - ./input:/inputs
+      - ./input:/ComfyUI/input
       - ./workflows:/workflows
     depends_on:
       comfyui:
@@ -39,5 +39,7 @@ services:
       context: . 
     environment:
       - DIRECT_ADDRESS=comfyui
+      - INPUT_DIR=/ComfyUI/input
+      - STARTUP_CHECK_MAX_TRIES=20
     command: ["./comfyui-api"]
 
